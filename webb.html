@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIHope - Healthcare Application</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2EBFB3;
+            --primary-dark: #1FA89E;
+            --secondary: #4A90E2;
+            --accent: #67D4C8;
+            --bg-main: #F8FCFC;
+            --bg-white: #FFFFFF;
+            --text-primary: #1A3847;
+            --text-secondary: #5A7B8C;
+            --text-light: #8FA8B5;
+            --shadow: rgba(46, 191, 179, 0.15);
+            --shadow-strong: rgba(46, 191, 179, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #F8FCFC 0%, #E8F5F4 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 375px;
+            margin: 0 auto;
+            height: 812px;
+            background: var(--bg-white);
+            border-radius: 45px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .phone-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+        }
+
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: var(--bg-white);
+            border-radius: 0 0 20px 20px;
+            z-index: 100;
+        }
+
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            z-index: 99;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            padding: 54px 24px 24px;
+            overflow-y: auto;
+            background: var(--bg-white);
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .screen::-webkit-scrollbar {
+            width: 0;
+        }
+
+        /* Page Label */
+        .page-label {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* Welcome Screen - Page 1 */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        .logo-icon {
+            display: inline-block;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 14px;
+            margin-bottom: 20px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo-icon::before {
+            content: '♥';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 32px;
+            color: white;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .logo {
+            font-family: 'Cairo', sans-serif;
+            font-size: 44px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+
+        .tagline {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 50px;
+            font-weight: 500;
+            line-height: 1.7;
+            padding: 0 10px;
+        }
+
+        /* Feature Onboarding Screens - Pages 2-6 */
+        .onboarding-screen {
+            padding-top: 40px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .illustration {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, rgba(46, 191, 179, 0.08) 0%, rgba(103, 212, 200, 0.05) 100%);
+            border-radius: 28px;
+            margin-bottom: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .illustration-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, rgba(46, 191, 179, 0.15) 0%, transparent 60%);
+        }
+
+        .illustration img {
+            width: 200px;
+            height: auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .illustration-placeholder {
+            font-size: 90px;
+            position: relative;
+            z-index: 2;
+        }
+
+        h2 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 18px;
+            line-height: 1.3;
+        }
+
+        .description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        /* Navigation Dots */
+        .dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: auto 0 30px 0;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 4px;
+            background: var(--text-light);
+            opacity: 0.3;
+            transition: all 0.4s ease;
+        }
+
+        .dot.active {
+            width: 28px;
+            background: var(--primary);
+            opacity: 1;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 17px;
+            border: none;
+            border-radius: 18px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 10px 30px var(--shadow-strong);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px var(--shadow-strong);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: right 0.6s ease;
+        }
+
+        .btn-primary:hover::before {
+            right: 100%;
+        }
+
+        /* Sign Up / Login Forms - Pages 7-8 */
+        .form-container {
+            padding-top: 30px;
+        }
+
+        .form-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: 30px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 35px;
+            color: var(--text-primary);
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 18px;
+        }
+
+        input {
+            width: 100%;
+            padding: 17px 50px 17px 18px;
+            border: 2px solid rgba(46, 191, 179, 0.2);
+            border-radius: 15px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 15px;
+            color: var(--text-primary);
+            background: var(--bg-white);
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--shadow);
+        }
+
+        input::placeholder {
+            color: var(--text-light);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .checkbox-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .checkbox-label a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 22px 0;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(46, 191, 179, 0.2);
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .btn-social {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid rgba(46, 191, 179, 0.2);
+            border-radius: 14px;
+            background: var(--bg-white);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 22px;
+        }
+
+        .btn-social:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px var(--shadow);
+        }
+
+        .link-text {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 18px;
+        }
+
+        .link-text a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* Welcome Back Screen - Page 9 */
+        .welcome-back {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-top: 100px;
+        }
+
+        .welcome-circle {
+            width: 220px;
+            height: 220px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            border-radius: 50%;
+            margin-bottom: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: pulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 0 0 0 var(--shadow-strong); 
+            }
+            50% { 
+                transform: scale(1.05); 
+                box-shadow: 0 0 0 25px rgba(46, 191, 179, 0); 
+            }
+        }
+
+        .welcome-circle::before {
+            content: '👋';
+            font-size: 90px;
+        }
+
+        .welcome-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .welcome-subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 55px;
+            padding: 0 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="notch"></div>
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>⚡📶📡</span>
+        </div>
+
+        <!-- Page 1: Welcome -->
+        <div class="screen active" id="page1">
+            <div class="welcome-screen">
+                <div class="logo-icon"></div>
+                <div class="logo">VIHope</div>
+                <div class="tagline">Get early medical care for HIV,<br>Everything virtually!</div>
+                <div style="width: 100%; padding: 0 10px;">
+                    <button class="btn btn-primary" onclick="goToPage(2)">Get Started</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2: Village Support -->
+        <div class="screen" id="page2">
+            <div class="onboarding-screen">
+                <div class="illustration">
+                    <div class="illustration-bg"></div>
+                    <div class="illustration-placeholder">💬</div>
+                </div>
+                <h2>The Village - Daily Support</h2>
+                <div class="description">
+                    The Village - Daily Support; Get Hope - Lift in trends often in "Custom Chats"; These "Support Sessions" allow you to talk to people who face similar challenges in living with treatment.
+                </div>
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot active"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <button class="btn btn-primary" onclick="goToPage(3)">Continue</button>
+            </div>
+        </div>
+
+        <!-- Page 3: Medication Treatment -->
+        <div class="screen" id="page3">
+            <div class="onboarding-screen">
+                <div class="illustration">
+                    <div class="illustration-bg"></div>
+                    <div class="illustration-placeholder">💊</div>
+                </div>
+                <h2>Medication Treatment Management</h2>
+                <div class="description">
+                    This feature helps you manage your medication throughout the day. It sends direct medical reminders making it easy to maintain your medication routine early, which likely prevents complications.
+                </div>
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot active"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <button class="btn btn-primary" onclick="goToPage(4)">Continue</button>
+            </div>
+        </div>
+
+        <!-- Page 4: Doctor Appointments -->
+        <div class="screen" id="page4">
+            <div class="onboarding-screen">
+                <div class="illustration">
+                    <div class="illustration-bg"></div>
+                    <div class="illustration-placeholder">📅</div>
+                </div>
+                <h2>Doctor Appointments</h2>
+                <div class="description">
+                    The Appointments feature enables you to schedule, track and prepare for medical appointments. It provides reminders for upcoming visits and suggests questions to ask during consultations.
+                </div>
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot active"></div>
+                    <div class="dot"></div>
+                </div>
+                <button class="btn btn-primary" onclick="goToPage(5)">Continue</button>
+            </div>
+        </div>
+
+        <!-- Page 5: Physical Activity Tracker -->
+        <div class="screen" id="page5">
+            <div class="onboarding-screen">
+                <div class="illustration">
+                    <div class="illustration-bg"></div>
+                    <div class="illustration-placeholder">🏃</div>
+                </div>
+                <h2>Physical Activity Tracker</h2>
+                <div class="description">
+                    This tracker promotes regular physical activity with personalized suggestions, tracking capabilities and motivating challenges that suit your fitness goals and overall health.
+                </div>
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot active"></div>
+                </div>
+                <button class="btn btn-primary" onclick="goToPage(6)">Continue</button>
+            </div>
+        </div>
+
+        <!-- Page 6: AI Doctor -->
+        <div class="screen" id="page6">
+            <div class="onboarding-screen">
+                <div class="illustration">
+                    <div class="illustration-bg"></div>
+                    <div class="illustration-placeholder">🏥</div>
+                </div>
+                <h2>Your Smart Doctor!</h2>
+                <div class="description">
+                    With AI we were able to give you one of the best doctors. Danny, your personal virtual doctor is available to guide you, suggest and improve overall health! Everything virtually!
+                </div>
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <button class="btn btn-primary" onclick="goToPage(7)">Get Started</button>
+            </div>
+        </div>
+
+        <!-- Page 7: Sign Up -->
+        <div class="screen" id="page7">
+            <div class="form-container">
+                <div class="form-title">Create Account!</div>
+                
+                <div class="input-group">
+                    <span class="input-icon">👤</span>
+                    <input type="text" placeholder="Username">
+                </div>
+
+                <div class="input-group">
+                    <span class="input-icon">✉️</span>
+                    <input type="email" placeholder="Email Address">
+                </div>
+
+                <div class="input-group">
+                    <span class="input-icon">📞</span>
+                    <input type="tel" placeholder="Phone Number">
+                </div>
+
+                <div class="input-group">
+                    <span class="input-icon">📧</span>
+                    <input type="email" placeholder="Email">
+                </div>
+
+                <div class="input-group">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" placeholder="Password">
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="terms">
+                    <label for="terms" class="checkbox-label">
+                        By continuing, you agree to our <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button class="btn btn-primary" onclick="goToPage(9)">Get Started</button>
+
+                <div class="divider">OR</div>
+
+                <div class="social-buttons">
+                    <button class="btn-social">🍎</button>
+                    <button class="btn-social">🔵</button>
+                    <button class="btn-social">🔍</button>
+                </div>
+
+                <div class="link-text">
+                    Already have an account? <a onclick="goToPage(8)">Sign In</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 8: Login -->
+        <div class="screen" id="page8">
+            <div class="form-container">
+                <div class="form-title">Welcome Back!</div>
+                
+                <div class="input-group">
+                    <span class="input-icon">📧</span>
+                    <input type="email" placeholder="Email Address">
+                </div>
+
+                <div class="input-group">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" placeholder="Password">
+                </div>
+
+                <div class="link-text" style="text-align: right; margin-bottom: 28px;">
+                    <a href="#">Forgot Password?</a>
+                </div>
+
+                <button class="btn btn-primary" onclick="goToPage(9)">Sign In</button>
+
+                <div class="divider">OR</div>
+
+                <div class="social-buttons">
+                    <button class="btn-social">🍎</button>
+                    <button class="btn-social">🔵</button>
+                    <button class="btn-social">🔍</button>
+                </div>
+
+                <div class="link-text">
+                    Don't have an account yet? <a onclick="goToPage(7)">Sign Up</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 9: Welcome Back -->
+        <div class="screen" id="page9">
+            <div class="welcome-back">
+                <div class="welcome-circle"></div>
+                <div class="welcome-title">Hello, Bella.</div>
+                <div class="welcome-subtitle">
+                    Explore your four main features,<br>
+                    We love the new experience with us!
+                </div>
+                <button class="btn btn-primary" onclick="window.location.href='main.html'">
+                    Go to Home
+                </button>
+            </div>
+        </div>
+
+        <div class="page-label" id="pageLabel">Page 1</div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+
+        function goToPage(pageNum) {
+            // Hide current page
+            document.getElementById('page' + currentPage).classList.remove('active');
+            
+            // Show new page
+            currentPage = pageNum;
+            document.getElementById('page' + currentPage).classList.add('active');
+            
+            // Update page label
+            document.getElementById('pageLabel').textContent = 'Page ' + currentPage;
+            
+            // Scroll to top of new page
+            document.getElementById('page' + currentPage).scrollTop = 0;
+        }
+    </script>
+</body>
+</html>
