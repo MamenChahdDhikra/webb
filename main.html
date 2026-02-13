@@ -1,0 +1,3237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIHope - Health Companion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f5f8fa 0%, #e8f0f2 100%);
+            overflow-x: hidden;
+        }
+
+        .phone-frame {
+            max-width: 390px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            overflow-y: auto;
+            position: relative;
+            min-height: 844px;
+            max-height: 844px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            background: white;
+        }
+
+        .status-icons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        /* Enhanced Icons */
+        .icon-svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .screen {
+            display: none;
+            padding: 20px;
+            min-height: 750px;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .screen.active {
+            display: block;
+            z-index: 10;
+        }
+
+        .chatbot-page:not(.active),
+        .profile-edit-page:not(.active),
+        .notifications-page:not(.active),
+        .avatar-selection-page:not(.active) {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            position: absolute !important;
+            top: -9999px !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header Styles */
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .header .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .bell-icon {
+            position: absolute;
+            top: 65px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bell-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.25);
+        }
+
+        .bell-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: #4ecdc4;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Welcome Screen */
+        .welcome-text {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text .name {
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+
+        .progress-card {
+            background: linear-gradient(135deg, #e0f7f6 0%, #b8f0ed 100%);
+            border-radius: 24px;
+            padding: 24px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(78, 205, 196, 0.15);
+        }
+
+        .progress-bar-container {
+            display: flex;
+            gap: 3px;
+            margin-bottom: 12px;
+        }
+
+        .progress-segment {
+            height: 40px;
+            border-radius: 10px;
+            flex: 1;
+            transition: all 0.3s ease;
+        }
+
+        .progress-segment.filled {
+            background: linear-gradient(180deg, #4ecdc4 0%, #3ab8af 100%);
+            box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+        }
+
+        .progress-segment.empty {
+            background: rgba(255,255,255,0.6);
+            border: 2px solid rgba(78, 205, 196, 0.2);
+        }
+
+        .progress-percentage {
+            font-size: 36px;
+            font-weight: 800;
+            color: #4ecdc4;
+            text-align: right;
+            text-shadow: 0 2px 4px rgba(78, 205, 196, 0.2);
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .smiley-icon {
+            position: absolute;
+            right: 24px;
+            bottom: 24px;
+            width: 56px;
+            height: 56px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        /* Activity Cards */
+        .activity-section {
+            margin-top: 30px;
+        }
+
+        .activity-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .activity-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .activity-card {
+            background: white;
+            border: 2px solid #e8f5f4;
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .activity-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .activity-card:hover::before {
+            opacity: 1;
+        }
+
+        .activity-card:hover {
+            border-color: #4ecdc4;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(78, 205, 196, 0.25);
+        }
+
+        .activity-card.large {
+            grid-column: 1 / -1;
+            padding: 32px 24px;
+        }
+
+        .activity-icon {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, #e8f5f4 0%, #d0f0ed 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .activity-card:hover .activity-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.25);
+        }
+
+        .activity-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .activity-card p {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .tip-text {
+            font-size: 11px;
+            color: #888;
+            line-height: 1.6;
+            margin-top: 12px;
+            padding: 0 10px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 390px;
+            width: 100%;
+            background: white;
+            padding: 12px 20px 28px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #f0f0f0;
+            border-radius: 24px 24px 0 0;
+            z-index: 100;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #f0f9f8;
+            border-radius: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-item:hover::before {
+            opacity: 1;
+        }
+
+        .nav-item.active {
+            color: #4ecdc4;
+        }
+
+        .nav-item.active .nav-icon svg {
+            stroke: #4ecdc4;
+            fill: #4ecdc4;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: #666;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: all 0.3s ease;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .fab {
+            width: 68px;
+            height: 68px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(78, 205, 196, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: -36px;
+        }
+
+        .fab:hover {
+            transform: scale(1.15) rotate(90deg);
+            box-shadow: 0 12px 32px rgba(78, 205, 196, 0.5);
+        }
+
+        .fab svg {
+            width: 28px;
+            height: 28px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* Medication Screens */
+        .med-screen {
+            background: #f8fafb;
+            padding: 0;
+            min-height: 750px;
+        }
+
+        .med-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px 20px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+
+        .logo-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2.5;
+        }
+
+        .logo-text {
+            color: #1a1a1a;
+        }
+
+        .logo-text span:first-child {
+            color: #4ecdc4;
+        }
+
+        .med-bell-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+        }
+
+        .med-bell-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(78, 205, 196, 0.2);
+        }
+
+        .med-bell-icon svg {
+            width: 20px;
+            height: 20px;
+            stroke: #4ecdc4;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .date-header {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        /* Medication Card */
+        .med-card {
+            background: white;
+            border-radius: 28px;
+            padding: 28px;
+            margin: 0 20px 24px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+        }
+
+        .med-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .med-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            line-height: 1.3;
+        }
+
+        .pill-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, #f0f9f8 0%, #e0f4f3 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 4px 16px rgba(78, 205, 196, 0.15);
+        }
+
+        /* Week Days */
+        .week-days {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .date-label {
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .day-item {
+            text-align: center;
+        }
+
+        .day-label {
+            font-size: 11px;
+            color: #999;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .day-circle {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+
+        .day-circle:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+        }
+
+        /* Log Section */
+        .log-section {
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .log-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px;
+            background: white;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .log-item:hover {
+            background: #f0f9f8;
+            transform: translateX(6px);
+            box-shadow: 0 4px 20px rgba(78, 205, 196, 0.15);
+        }
+
+        .log-time {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            min-width: 70px;
+        }
+
+        .log-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .log-icon.red {
+            background: linear-gradient(135deg, #ffe8e8 0%, #ffd5d5 100%);
+        }
+
+        .log-icon.yellow {
+            background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+        }
+
+        .log-name {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .check-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+        }
+
+        /* Medications Section */
+        .medications-section {
+            margin-top: 32px;
+            padding: 0 20px;
+            margin-bottom: 100px;
+        }
+
+        .med-list-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px;
+            background: white;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+
+        .med-list-item:hover {
+            box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+            transform: translateY(-3px);
+        }
+
+        .med-info {
+            flex: 1;
+        }
+
+        .med-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .med-dosage {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .arrow-icon {
+            color: #ccc;
+            font-size: 18px;
+        }
+
+        .refresh-icon {
+            color: #4ecdc4;
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .refresh-icon:hover {
+            transform: rotate(180deg);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        /* Success Modal */
+        .success-modal {
+            background: white;
+            border-radius: 32px;
+            padding: 40px 28px;
+            width: 340px;
+            text-align: center;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(60px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 32px;
+            height: 32px;
+            background: #f5f5f5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: #e0e0e0;
+            transform: rotate(90deg);
+        }
+
+        .success-icon {
+            width: 96px;
+            height: 96px;
+            background: linear-gradient(135deg, #e8f5f4 0%, #d0f0ed 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 8px 28px rgba(78, 205, 196, 0.2);
+        }
+
+        .checkmark {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #4ecdc4;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4ecdc4;
+            font-size: 28px;
+            font-weight: 700;
+            animation: checkmarkPop 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+        }
+
+        @keyframes checkmarkPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .modal-title .success-text {
+            color: #4ecdc4;
+        }
+
+        .modal-message {
+            font-size: 15px;
+            color: #666;
+            line-height: 1.7;
+            margin: 20px 0;
+        }
+
+        .modal-xp {
+            font-size: 13px;
+            color: #999;
+            margin-top: 16px;
+        }
+
+        /* Blurred Background */
+        .screen.blurred {
+            filter: blur(8px);
+            pointer-events: none;
+        }
+
+        .bottom-nav.blurred {
+            filter: blur(8px);
+            pointer-events: none;
+        }
+
+        /* Calendar */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .month-selector {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .month-selector select {
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            cursor: pointer;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 14px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .calendar-day:not(.header):not(.inactive):hover {
+            background: #f0f9f8;
+            transform: scale(1.05);
+        }
+
+        .calendar-day.header {
+            color: #999;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: default;
+        }
+
+        .calendar-day.today {
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+
+        .calendar-day.inactive {
+            color: #ccc;
+            cursor: default;
+        }
+
+        .appointment-info {
+            background: linear-gradient(135deg, #e8f5f4 0%, #d0f0ed 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(78, 205, 196, 0.15);
+        }
+
+        .appointment-info::before {
+            content: '';
+            position: absolute;
+            left: 16px;
+            top: 16px;
+            bottom: 16px;
+            width: 4px;
+            background: linear-gradient(180deg, #4ecdc4 0%, #3ab8af 100%);
+            border-radius: 2px;
+        }
+
+        .appointment-text {
+            font-size: 13px;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding-left: 16px;
+        }
+
+        .unlock-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 12px;
+            padding-left: 16px;
+        }
+
+        /* Physical Tracker */
+        .tracker-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .tracker-illustration {
+            width: 100%;
+            height: 220px;
+            background: linear-gradient(135deg, #e8f5f4 0%, #d0f0ed 100%);
+            border-radius: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(78, 205, 196, 0.15);
+        }
+
+        .runner-svg {
+            width: 150px;
+            height: 150px;
+        }
+
+        .wave-decoration {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(78, 205, 196, 0.15);
+        }
+
+        .challenge-banner {
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 24px rgba(78, 205, 196, 0.3);
+        }
+
+        .challenge-text {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .challenge-steps {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .progress-indicator {
+            width: 64px;
+            height: 64px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .progress-indicator:hover {
+            transform: scale(1.1);
+            background: rgba(255,255,255,0.35);
+        }
+
+        .activity-progress {
+            margin-top: 20px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .week-chart {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 8px;
+            height: 150px;
+            margin-bottom: 12px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(180deg, #4ecdc4 0%, #3ab8af 100%);
+            border-radius: 10px 10px 0 0;
+            min-height: 20px;
+            position: relative;
+            box-shadow: 0 -2px 8px rgba(78, 205, 196, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .chart-bar:hover {
+            transform: scaleY(1.05);
+            box-shadow: 0 -4px 16px rgba(78, 205, 196, 0.3);
+        }
+
+        .chart-bar.low {
+            height: 40%;
+            background: linear-gradient(180deg, #b8f0ed 0%, #a0e6e3 100%);
+        }
+
+        .chart-bar.medium {
+            height: 70%;
+        }
+
+        .chart-bar.high {
+            height: 100%;
+        }
+
+        .chart-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        /* Story Screen */
+        .story-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .story-title {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .story-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .story-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+
+        .story-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .story-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #4ecdc4;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .story-checkbox:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+        }
+
+        .story-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        /* Chapter List Screens */
+        .chapter-list-screen {
+            background: linear-gradient(180deg, #e8f5f4 0%, #d4f1ee 50%, #c0ede9 100%);
+            padding: 20px;
+            min-height: 750px;
+        }
+
+        .back-arrow {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            margin-bottom: 20px;
+            font-size: 20px;
+            color: #4ecdc4;
+            transition: all 0.3s ease;
+        }
+
+        .back-arrow:hover {
+            transform: translateX(-4px);
+            box-shadow: 0 6px 24px rgba(78, 205, 196, 0.25);
+        }
+
+        .help-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.35);
+            transition: all 0.3s ease;
+        }
+
+        .help-icon:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 8px 28px rgba(78, 205, 196, 0.45);
+        }
+
+        .chapter-intro {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chapter-intro:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+
+        .chapter-intro h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .chapter-intro h3 .highlight {
+            color: #4ecdc4;
+        }
+
+        .chapter-intro p {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .chapter-item {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+
+        .chapter-item.locked {
+            background: rgba(150, 150, 150, 0.3);
+            cursor: not-allowed;
+        }
+
+        .chapter-item:not(.locked):hover {
+            background: white;
+            transform: translateX(6px);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+        }
+
+        .chapter-left {
+            flex: 1;
+        }
+
+        .chapter-number {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .chapter-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .chapter-title .highlight {
+            color: #4ecdc4;
+        }
+
+        .chapter-subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .lock-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .arrow-right {
+            color: #4ecdc4;
+            font-size: 20px;
+        }
+
+        /* AI CHATBOT PAGE */
+        .chatbot-page {
+            background: linear-gradient(180deg, #e8f5f4 0%, #d4f1ee 100%);
+            padding: 0 !important;
+            min-height: 750px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            height: 100%;
+        }
+
+        .chat-header {
+            padding: 60px 20px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            background: linear-gradient(180deg, #e8f5f4 0%, #d4f1ee 100%);
+        }
+
+        .chat-back-btn {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            font-size: 20px;
+            color: #4ecdc4;
+            transition: all 0.3s ease;
+        }
+
+        .chat-back-btn:hover {
+            transform: translateX(-4px);
+            box-shadow: 0 6px 24px rgba(78, 205, 196, 0.25);
+        }
+
+        .library-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(78, 205, 196, 0.35);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .library-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(78, 205, 196, 0.45);
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            padding-bottom: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-message {
+            max-width: 85%;
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 20px 20px 4px 20px;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 4px 16px rgba(78, 205, 196, 0.3);
+        }
+
+        .chat-message.bot {
+            align-self: flex-start;
+            background: white;
+            color: #1a1a1a;
+            padding: 18px;
+            border-radius: 20px 20px 20px 4px;
+            font-size: 14px;
+            line-height: 1.6;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .chat-message.bot strong {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .message-reactions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .reaction-btn {
+            width: 32px;
+            height: 32px;
+            background: #f0f9f8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .reaction-btn:hover {
+            background: #4ecdc4;
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+
+        .reaction-btn.active {
+            background: #4ecdc4;
+        }
+
+        .chat-input-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px 24px;
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            z-index: 1000;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8fafb;
+            border-radius: 28px;
+            padding: 12px 20px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .chat-input-field {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            outline: none;
+            color: #1a1a1a;
+            padding: 6px 0;
+        }
+
+        .chat-input-field::placeholder {
+            color: #999;
+        }
+
+        .voice-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            color: #4ecdc4;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(78, 205, 196, 0.2);
+        }
+
+        .voice-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 16px rgba(78, 205, 196, 0.35);
+        }
+
+        .typing-dots {
+            display: none;
+            align-self: flex-start;
+            background: white;
+            padding: 18px 24px;
+            border-radius: 20px 20px 20px 4px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .typing-dots.show {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.5;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Profile Edit Pages */
+        .profile-edit-page {
+            background: linear-gradient(180deg, #e8f5f4 0%, #f0faf9 100%);
+            padding: 20px;
+            min-height: 750px;
+        }
+
+        #profile-edit.active ~ .bottom-nav,
+        #avatar-select.active ~ .bottom-nav,
+        #aichat.active ~ .bottom-nav {
+            display: none;
+        }
+
+        /* Notifications Page */
+        .notifications-page {
+            background: linear-gradient(180deg, #e8f5f4 0%, #f0faf9 100%);
+            padding: 20px;
+            min-height: 750px;
+        }
+
+        .notif-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .notif-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+
+        .notif-dot {
+            width: 10px;
+            height: 10px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(78, 205, 196, 0.4);
+        }
+
+        .notif-content {
+            flex: 1;
+        }
+
+        .notif-content p {
+            font-size: 14px;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .notif-content .highlight {
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+
+        .notif-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .back-to-home {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            font-size: 20px;
+            color: #4ecdc4;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-home:hover {
+            transform: translateX(-4px);
+            box-shadow: 0 6px 24px rgba(78, 205, 196, 0.25);
+        }
+
+        .notif-bell {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #ff6b6b;
+        }
+
+        .profile-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .profile-pic {
+            width: 68px;
+            height: 68px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(78, 205, 196, 0.3);
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-info h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .profile-info p {
+            font-size: 13px;
+            color: #999;
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 16px rgba(78, 205, 196, 0.35);
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(78, 205, 196, 0.45);
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .section-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .section-item:hover {
+            padding-left: 8px;
+        }
+
+        .section-item:last-child {
+            border-bottom: none;
+        }
+
+        .section-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-item-icon {
+            color: #4ecdc4;
+            font-size: 20px;
+        }
+
+        .section-item-text {
+            font-size: 14px;
+            color: #1a1a1a;
+        }
+
+        .section-item-arrow {
+            color: #ccc;
+            font-size: 16px;
+        }
+
+        .toggle-switch {
+            width: 52px;
+            height: 30px;
+            background: #4ecdc4;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            right: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .toggle-switch.off {
+            background: #e0e0e0;
+        }
+
+        .toggle-switch.off::after {
+            right: 24px;
+        }
+
+        /* Avatar Selection Page */
+        .avatar-selection-page {
+            background: white;
+            padding: 20px;
+            min-height: 750px;
+        }
+
+        .avatar-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .avatar-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .avatar-option {
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid transparent;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .avatar-option:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+        .avatar-option.selected {
+            border-color: #4ecdc4;
+            box-shadow: 0 6px 24px rgba(78, 205, 196, 0.4);
+            background: #f0f9f8;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 28px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 6px 24px rgba(78, 205, 196, 0.35);
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(78, 205, 196, 0.45);
+        }
+
+        /* Account Settings */
+        .profile-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .profile-avatar {
+            width: 88px;
+            height: 88px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            box-shadow: 0 8px 28px rgba(78, 205, 196, 0.3);
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+        }
+
+        .profile-subtitle {
+            font-size: 13px;
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+
+        .settings-section {
+            margin-bottom: 24px;
+        }
+
+        .settings-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .setting-item {
+            background: white;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .setting-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .setting-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .setting-icon {
+            color: #4ecdc4;
+            font-size: 20px;
+        }
+
+        .setting-text {
+            font-size: 14px;
+            color: #1a1a1a;
+        }
+
+        .setting-arrow {
+            color: #ccc;
+            font-size: 16px;
+        }
+
+        /* Welcome Modal */
+        .welcome-modal {
+            background: rgba(0,0,0,0.5);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            backdrop-filter: blur(4px);
+        }
+
+        .welcome-modal.active {
+            display: flex;
+        }
+
+        .welcome-content {
+            background: rgba(50, 50, 50, 0.95);
+            border-radius: 32px;
+            padding: 40px 28px;
+            max-width: 340px;
+            text-align: center;
+            color: white;
+            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+        }
+
+        .welcome-content h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #4ecdc4;
+        }
+
+        .welcome-content p {
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .close-welcome {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .close-welcome:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+
+        /* Reading View */
+        .reading-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 1002;
+            display: none;
+            flex-direction: column;
+        }
+
+        .reading-view.active {
+            display: flex;
+        }
+
+        .reading-header {
+            padding: 60px 20px 24px;
+            background: linear-gradient(180deg, #e8f5f4 0%, white 100%);
+        }
+
+        .reading-close {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            font-size: 20px;
+            color: #4ecdc4;
+            transition: all 0.3s ease;
+        }
+
+        .reading-close:hover {
+            transform: translateX(-4px);
+            box-shadow: 0 6px 24px rgba(78, 205, 196, 0.25);
+        }
+
+        .reading-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .reading-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .reading-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 24px 100px;
+        }
+
+        .reading-content p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 24px;
+        }
+
+        .reading-content p:first-of-type::first-letter {
+            font-size: 56px;
+            font-weight: 700;
+            color: #4ecdc4;
+            float: left;
+            line-height: 1;
+            margin-right: 10px;
+            margin-top: 6px;
+        }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 350px;
+            max-width: 90%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4 0%, #3ab8af 100%);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Unlocked Message Modal */
+        .unlocked-modal {
+            background: rgba(0,0,0,0.5);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            backdrop-filter: blur(4px);
+        }
+
+        .unlocked-modal.active {
+            display: flex;
+        }
+
+        .unlocked-content {
+            background: white;
+            border-radius: 32px;
+            padding: 40px 28px;
+            max-width: 340px;
+            text-align: center;
+            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+        }
+
+        .unlocked-content h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .unlocked-content h2 .highlight {
+            color: #4ecdc4;
+        }
+
+        .unlocked-content p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 430px) {
+            .phone-frame {
+                border-radius: 0;
+                margin: 0;
+                min-height: 100vh;
+            }
+            
+            .bottom-nav {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <!-- Page 10: Home/Welcome -->
+        <div class="screen active" id="home">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <div class="bell-icon" onclick="showNotification()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </div>
+            
+            <div class="header">
+                <div class="welcome-text">
+                    Welcome <span class="name">Bella BAINE</span>.
+                </div>
+                <p class="subtitle" style="font-size: 12px; color: #999;">Follow your pills</p>
+            </div>
+
+            <div class="progress-card">
+                <div class="progress-bar-container">
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment filled"></div>
+                    <div class="progress-segment empty"></div>
+                    <div class="progress-segment empty"></div>
+                    <div class="progress-segment empty"></div>
+                    <div class="progress-segment empty"></div>
+                    <div class="progress-segment empty"></div>
+                    <div class="progress-segment empty"></div>
+                    <div class="progress-segment empty"></div>
+                    <div class="progress-segment empty"></div>
+                </div>
+                <div class="progress-percentage">60%</div>
+                <div class="progress-text">Earn extra XP for every pill you log!</div>
+                <div class="smiley-icon">☄️</div>
+            </div>
+
+            <div class="activity-section">
+                <h2>Activity status</h2>
+                <div class="activity-grid">
+                    <div class="activity-card" onclick="navigateTo('medication')">
+                        <div class="activity-icon">💊</div>
+                        <h3>Medication</h3>
+                        <p>Treatement</p>
+                    </div>
+                    <div class="activity-card" onclick="navigateTo('appointments')">
+                        <div class="activity-icon">📅</div>
+                        <h3>Doctor</h3>
+                        <p>Appointments</p>
+                    </div>
+                    <div class="activity-card large" onclick="navigateTo('tracker')">
+                        <div class="activity-icon" style="width: 80px; height: 80px; font-size: 36px;">💪</div>
+                        <h3>Physical Tracker</h3>
+                        <p class="tip-text">We say is 100% true but we all need to dedicate a hour to provide a your body and mind with physical exercise.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI CHATBOT PAGE -->
+        <div class="screen chatbot-page" id="aichat">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <div class="chat-header">
+                <div class="chat-back-btn" onclick="navigateTo('home')">←</div>
+                <div style="flex: 1; text-align: center; font-size: 16px; font-weight: 600; color: #1a1a1a;">AI Health Assistant</div>
+                <div style="width: 44px;"></div>
+            </div>
+
+            <div class="chat-container" id="chatContainer">
+                <div style="align-self: center; text-align: center; padding: 24px; color: #666; font-size: 13px;">
+                    <div style="font-size: 56px; margin-bottom: 16px;">🤖</div>
+                    <strong style="font-size: 16px;">Welcome to VIHope AI!</strong><br><br>
+                    Ask me anything about HIV health, treatment, or living well.
+                </div>
+
+                <div class="typing-dots" id="typingDots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        class="chat-input-field" 
+                        id="chatInputField" 
+                        placeholder="Ask about HIV health..."
+                        onkeypress="handleAIChat(event)"
+                    >
+                    <div class="voice-icon" onclick="sendAIMessage()">➤</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medication Treatment Screen -->
+        <div class="screen med-screen" id="medication">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <div class="med-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                    <div class="logo-text"><span>VI</span>Hope</div>
+                </div>
+                <div class="med-bell-icon" onclick="showNotification()">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="med-card">
+                <div class="med-card-header">
+                    <h1 class="med-title">Medication<br>Treatement</h1>
+                    <div class="pill-icon">💊</div>
+                </div>
+
+                <div class="date-label">Today, June 18</div>
+
+                <div class="week-days">
+                    <div class="day-item">
+                        <span class="day-label">S</span>
+                        <div class="day-circle">1</div>
+                    </div>
+                    <div class="day-item">
+                        <span class="day-label">M</span>
+                        <div class="day-circle">2</div>
+                    </div>
+                    <div class="day-item">
+                        <span class="day-label">T</span>
+                        <div class="day-circle">3</div>
+                    </div>
+                    <div class="day-item">
+                        <span class="day-label">W</span>
+                        <div class="day-circle">4</div>
+                    </div>
+                    <div class="day-item">
+                        <span class="day-label">T</span>
+                        <div class="day-circle" style="background: #e0e0e0; color: #999; box-shadow: none;">5</div>
+                    </div>
+                    <div class="day-item">
+                        <span class="day-label">F</span>
+                        <div class="day-circle" style="background: #e0e0e0; color: #999; box-shadow: none;">6</div>
+                    </div>
+                    <div class="day-item">
+                        <span class="day-label">S</span>
+                        <div class="day-circle" style="background: #e0e0e0; color: #999; box-shadow: none;">7</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="log-section">
+                <h2 class="section-title">Log</h2>
+                
+                <div class="log-item" onclick="showSuccessModal()">
+                    <div class="log-time">12:00 PM</div>
+                    <div class="log-icon red">💊</div>
+                    <div class="log-name">Biktarvy drug dose</div>
+                    <div class="check-icon">✓</div>
+                </div>
+
+                <div class="log-item">
+                    <div class="log-time">17:50 PM</div>
+                    <div class="log-icon yellow">Ω</div>
+                    <div class="log-name">Omega 3S -compliment</div>
+                    <div class="check-icon">✓</div>
+                </div>
+            </div>
+
+            <div class="medications-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 class="section-title" style="margin: 0;">Your medications</h2>
+                    <div class="refresh-icon">🔄</div>
+                </div>
+
+                <div class="med-list-item">
+                    <div class="log-icon red">💊</div>
+                    <div class="med-info">
+                        <div class="med-name">Biktarvy drug</div>
+                        <div class="med-dosage">pill</div>
+                    </div>
+                    <div class="arrow-icon">›</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor Appointments -->
+        <div class="screen" id="appointments">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <div class="bell-icon" onclick="showNotification()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </div>
+
+            <div class="med-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                    <span style="font-weight: 700; font-size: 20px;"><span style="color: #4ecdc4;">VI</span>Hope</span>
+                </div>
+            </div>
+
+            <h2 style="font-size: 22px; margin-bottom: 20px; font-weight: 700;">Doctor Appointments</h2>
+
+            <div class="calendar-header">
+                <span style="cursor: pointer; font-size: 20px; color: #4ecdc4;">‹</span>
+                <div class="month-selector">
+                    <select>
+                        <option>june</option>
+                        <option>july</option>
+                        <option>august</option>
+                    </select>
+                    <select>
+                        <option>2026</option>
+                        <option>2025</option>
+                    </select>
+                </div>
+                <span style="cursor: pointer; font-size: 20px; color: #4ecdc4;">›</span>
+            </div>
+
+            <div class="calendar-grid">
+                <div class="calendar-day header">Su</div>
+                <div class="calendar-day header">Mo</div>
+                <div class="calendar-day header">Tu</div>
+                <div class="calendar-day header">We</div>
+                <div class="calendar-day header">Th</div>
+                <div class="calendar-day header">Fr</div>
+                <div class="calendar-day header">Sa</div>
+                
+                <div class="calendar-day inactive"></div>
+                <div class="calendar-day">1</div>
+                <div class="calendar-day">2</div>
+                <div class="calendar-day">3</div>
+                <div class="calendar-day">4</div>
+                <div class="calendar-day">5</div>
+                <div class="calendar-day">6</div>
+                
+                <div class="calendar-day">7</div>
+                <div class="calendar-day">8</div>
+                <div class="calendar-day">9</div>
+                <div class="calendar-day">10</div>
+                <div class="calendar-day">11</div>
+                <div class="calendar-day">12</div>
+                <div class="calendar-day">13</div>
+                
+                <div class="calendar-day">14</div>
+                <div class="calendar-day">15</div>
+                <div class="calendar-day">16</div>
+                <div class="calendar-day">17</div>
+                <div class="calendar-day">18</div>
+                <div class="calendar-day today">19</div>
+                <div class="calendar-day">20</div>
+                
+                <div class="calendar-day">21</div>
+                <div class="calendar-day">22</div>
+                <div class="calendar-day">23</div>
+                <div class="calendar-day">24</div>
+                <div class="calendar-day">25</div>
+                <div class="calendar-day">26</div>
+                <div class="calendar-day">27</div>
+                
+                <div class="calendar-day">28</div>
+                <div class="calendar-day">29</div>
+                <div class="calendar-day">30</div>
+                <div class="calendar-day inactive">1</div>
+                <div class="calendar-day inactive">2</div>
+                <div class="calendar-day inactive">3</div>
+                <div class="calendar-day inactive">4</div>
+            </div>
+
+            <div class="appointment-info">
+                <div class="appointment-text">Your next appointment will be three days, at 9 AM in the morning with Doctor Miller</div>
+                <div class="unlock-text">you will unlock chapter 3 after this appointement!</div>
+            </div>
+        </div>
+
+        <!-- Physical Activity Tracker -->
+        <div class="screen" id="tracker">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <div class="bell-icon" onclick="showNotification()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </div>
+
+            <div class="med-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                    <span style="font-weight: 700; font-size: 20px;"><span style="color: #4ecdc4;">VI</span>Hope</span>
+                </div>
+            </div>
+
+            <div class="tracker-header">
+                <h2 style="font-size: 22px; margin-bottom: 8px; font-weight: 700;">Physical Activity Tracker</h2>
+                <p style="font-size: 14px; color: #666;">Today's Challenge: 3000 step</p>
+            </div>
+
+            <div class="tracker-illustration">
+                <svg class="runner-svg" viewBox="0 0 200 200" fill="none">
+                    <circle cx="100" cy="60" r="20" fill="#4ecdc4"/>
+                    <path d="M100 80 L120 140 M100 80 L80 140 M120 140 L130 180 M80 140 L70 180" stroke="#4ecdc4" stroke-width="8" stroke-linecap="round"/>
+                    <path d="M100 80 L110 110 M100 80 L90 110" stroke="#4ecdc4" stroke-width="8" stroke-linecap="round"/>
+                </svg>
+                <div class="wave-decoration"></div>
+            </div>
+
+            <div class="challenge-banner">
+                <div>
+                    <div class="challenge-text">Challenge will end next week!</div>
+                    <div class="challenge-steps">steps<br>4,890 step</div>
+                </div>
+                <div class="progress-indicator" onclick="navigateTo('aichat')" style="cursor: pointer;">💬</div>
+            </div>
+
+            <div class="activity-progress">
+                <div class="progress-header">
+                    <h3 style="font-weight: 600;">Activity Progress</h3>
+                    <span style="color: #4ecdc4; font-size: 14px; cursor: pointer; font-weight: 600;">weekly ›</span>
+                </div>
+                
+                <div class="week-chart">
+                    <div class="chart-bar high"></div>
+                    <div class="chart-bar medium"></div>
+                    <div class="chart-bar low"></div>
+                    <div class="chart-bar medium"></div>
+                    <div class="chart-bar high"></div>
+                    <div class="chart-bar medium"></div>
+                    <div class="chart-bar low"></div>
+                </div>
+                
+                <div class="chart-labels">
+                    <span>Sun</span>
+                    <span>Mon</span>
+                    <span>Tue</span>
+                    <span>Wed</span>
+                    <span>Thu</span>
+                    <span>Fri</span>
+                    <span>Sat</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Chapter -->
+        <div class="screen" id="story">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <div class="story-header">
+                <div class="story-title" style="font-weight: 600;">story, chapter one</div>
+                <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #4ecdc4 0%, #3ab8af 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; box-shadow: 0 4px 16px rgba(78, 205, 196, 0.3);">🔍</div>
+            </div>
+
+            <div class="story-card" onclick="navigateTo('chapters')">
+                <div class="story-card-header">
+                    <div class="story-checkbox"></div>
+                    <div class="story-name">Chapter one: The Day Still Rose.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chapters List -->
+        <div class="screen chapter-list-screen" id="chapters">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div class="back-arrow" onclick="navigateTo('story')">←</div>
+                <div class="help-icon" onclick="showWelcomeModal()">?</div>
+            </div>
+
+            <div class="chapter-intro" onclick="showChapterMessage(1)">
+                <h3>Chapter one: <span class="highlight">The Day Still Rose.</span></h3>
+                <p>"Showing up is already strength."</p>
+            </div>
+
+            <div class="chapter-item" onclick="showChapterMessage(2)">
+                <div class="chapter-left">
+                    <div class="chapter-number">Chapter two:</div>
+                    <div class="chapter-title"><span class="highlight">The First Step Back.</span></div>
+                    <div class="chapter-subtitle">"One step is enough to begin."</div>
+                </div>
+                <div class="arrow-right">›</div>
+            </div>
+
+            <div class="chapter-item locked">
+                <div class="chapter-left">
+                    <div class="chapter-number">Chapter three:</div>
+                    <div class="chapter-title">The First Step Back.</div>
+                </div>
+                <div class="lock-icon">🔒</div>
+            </div>
+
+            <div class="chapter-item locked">
+                <div class="chapter-left">
+                    <div class="chapter-number">Chapter four:</div>
+                    <div class="chapter-title">Learning the Map.</div>
+                </div>
+                <div class="lock-icon">🔒</div>
+            </div>
+
+            <div class="chapter-item locked">
+                <div class="chapter-left">
+                    <div class="chapter-number">Chapter five:</div>
+                    <div class="chapter-title">Rebuilding What Was Broken.</div>
+                </div>
+                <div class="lock-icon">🔒</div>
+            </div>
+
+            <div class="chapter-item locked">
+                <div class="chapter-left">
+                    <div class="chapter-number">Chapter six:</div>
+                    <div class="chapter-title">The Night Gets Lighter.</div>
+                </div>
+                <div class="lock-icon">🔒</div>
+            </div>
+
+            <div class="chapter-item locked">
+                <div class="chapter-left">
+                    <div class="chapter-number">Chapter seven:</div>
+                    <div class="chapter-title">You Are More Than This.</div>
+                </div>
+                <div class="lock-icon">🔒</div>
+            </div>
+
+            <div class="chapter-item locked">
+                <div class="chapter-left">
+                    <div class="chapter-number">Chapter eight:</div>
+                    <div class="chapter-title">Owning Your Story.</div>
+                </div>
+                <div class="lock-icon">🔒</div>
+            </div>
+
+            <div class="chapter-item locked">
+                <div class="chapter-left">
+                    <div class="chapter-number">Chapter nine:</div>
+                    <div class="chapter-title">The Future You Deserve.</div>
+                </div>
+                <div class="lock-icon">🔒</div>
+            </div>
+        </div>
+
+        <!-- Profile Edit Page -->
+        <div class="screen profile-edit-page" id="profile-edit">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-pic">👤</div>
+                <div class="profile-info">
+                    <h3>Bella BAINE?</h3>
+                    <p>bella.baine@gmail.com</p>
+                </div>
+                <button class="edit-btn" onclick="navigateTo('avatar-select')">Edit</button>
+            </div>
+
+            <div class="section-card">
+                <h3>Account</h3>
+                <div class="section-item">
+                    <div class="section-item-left">
+                        <span class="section-item-icon">👤</span>
+                        <span class="section-item-text">Personal Data</span>
+                    </div>
+                    <span class="section-item-arrow">›</span>
+                </div>
+                <div class="section-item">
+                    <div class="section-item-left">
+                        <span class="section-item-icon">🏆</span>
+                        <span class="section-item-text">Achievement</span>
+                    </div>
+                    <span class="section-item-arrow">›</span>
+                </div>
+                <div class="section-item">
+                    <div class="section-item-left">
+                        <span class="section-item-icon">📊</span>
+                        <span class="section-item-text">Activity History</span>
+                    </div>
+                    <span class="section-item-arrow">›</span>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h3>Notification</h3>
+                <div class="section-item">
+                    <div class="section-item-left">
+                        <span class="section-item-icon">🔔</span>
+                        <span class="section-item-text">Pop-up Notification</span>
+                    </div>
+                    <div class="toggle-switch" onclick="this.classList.toggle('off')"></div>
+                </div>
+            </div>
+
+            <div class="section-card" style="margin-bottom: 100px;">
+                <h3>Other</h3>
+                <div class="section-item">
+                    <div class="section-item-left">
+                        <span class="section-item-icon">📞</span>
+                        <span class="section-item-text">Contact Us</span>
+                    </div>
+                    <span class="section-item-arrow">›</span>
+                </div>
+                <div class="section-item">
+                    <div class="section-item-left">
+                        <span class="section-item-icon">🔒</span>
+                        <span class="section-item-text">Privacy Policy</span>
+                    </div>
+                    <span class="section-item-arrow">›</span>
+                </div>
+                <div class="section-item">
+                    <div class="section-item-left">
+                        <span class="section-item-icon">⚙️</span>
+                        <span class="section-item-text">Settings</span>
+                    </div>
+                    <span class="section-item-arrow">›</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Avatar Selection Page -->
+        <div class="screen avatar-selection-page" id="avatar-select">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-pic">👤</div>
+                <div class="profile-info">
+                    <h3>Bella BAINE?</h3>
+                </div>
+            </div>
+
+            <div class="avatar-header">
+                <h2>Choose your profile picture:</h2>
+            </div>
+
+            <div class="avatar-grid">
+                <div class="avatar-option" onclick="selectAvatar(this, '👶')">👶</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '👧')">👧</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '🧒')">🧒</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '👦')">👦</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '👩')">👩</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '🧑')">🧑</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '👨')">👨</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '👵')">👵</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '👴')">👴</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '👱‍♀️')">👱‍♀️</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '👱')">👱</div>
+                <div class="avatar-option" onclick="selectAvatar(this, '👩‍🦰')">👩‍🦰</div>
+            </div>
+
+            <button class="confirm-btn" onclick="confirmAvatar()" style="margin-bottom: 100px;">confirm</button>
+        </div>
+
+        <!-- Notifications Page -->
+        <div class="screen notifications-page" id="notifications">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <div class="notif-header-row">
+                <div style="width: 44px;"></div>
+                <div class="notif-bell">🔔</div>
+            </div>
+
+            <div class="notif-card">
+                <div class="notif-dot"></div>
+                <div class="notif-content">
+                    <p>The appointment with <span class="highlight">Dr.Smith</span> is in less than three day.</p>
+                </div>
+            </div>
+
+            <div class="notif-card">
+                <div class="notif-dot"></div>
+                <div class="notif-content">
+                    <p>Don't forget your daily walk goal !.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="screen" id="account">
+            <div class="status-bar">
+                <span>9:45</span>
+                <div class="status-icons">
+                    <span>📶</span>
+                    <span>📡</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <div class="profile-avatar">BB</div>
+                <div class="profile-name">"The Hopeful"<br>Bella BAINE?</div>
+                <div class="profile-subtitle">Level 10</div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Account</h3>
+                <div class="setting-item" onclick="navigateTo('profile-edit')">
+                    <div class="setting-left">
+                        <span class="setting-icon">👤</span>
+                        <span class="setting-text">Personal Data</span>
+                    </div>
+                    <span class="setting-arrow">›</span>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-left">
+                        <span class="setting-icon">🏆</span>
+                        <span class="setting-text">Achievement</span>
+                    </div>
+                    <span class="setting-arrow">›</span>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-left">
+                        <span class="setting-icon">📊</span>
+                        <span class="setting-text">Activity History</span>
+                    </div>
+                    <span class="setting-arrow">›</span>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Notification</h3>
+                <div class="setting-item">
+                    <div class="setting-left">
+                        <span class="setting-icon">🔔</span>
+                        <span class="setting-text">Pop-up Notification</span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>Other</h3>
+                <div class="setting-item">
+                    <div class="setting-left">
+                        <span class="setting-icon">📞</span>
+                        <span class="setting-text">Contact Us</span>
+                    </div>
+                    <span class="setting-arrow">›</span>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-left">
+                        <span class="setting-icon">🔒</span>
+                        <span class="setting-text">Privacy Policy</span>
+                    </div>
+                    <span class="setting-arrow">›</span>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-left">
+                        <span class="setting-icon">⚙️</span>
+                        <span class="setting-text">Settings</span>
+                    </div>
+                    <span class="setting-arrow">›</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav" id="bottomNav">
+            <div class="nav-item active" onclick="navigateTo('home')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                </div>
+                <div class="nav-label">Home</div>
+            </div>
+            <div class="nav-item" onclick="navigateTo('aichat')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="fab" onclick="navigateTo('story')">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+            </div>
+            <div class="nav-item" onclick="navigateTo('story')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                </div>
+            </div>
+            <div class="nav-item" onclick="navigateTo('profile-edit')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+        <div class="success-modal" onclick="event.stopPropagation()">
+            <div class="close-modal" onclick="closeModal()">✕</div>
+            
+            <div class="success-icon">
+                <div class="checkmark">✓</div>
+            </div>
+
+            <h2 class="modal-title">
+                Pill logged in <span class="success-text">successfully!</span>
+            </h2>
+
+            <p class="modal-message">
+                I am more than a diagnosis; I am a whole person with dreams and purpose.
+            </p>
+
+            <p class="modal-xp">
+                You gained 301xp you're at level 10!
+            </p>
+        </div>
+    </div>
+
+    <!-- Welcome Modal -->
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="welcome-content" onclick="event.stopPropagation()">
+            <div class="close-welcome" onclick="closeWelcomeModal()">✕</div>
+            <h2>Welcome to the story section</h2>
+            <p>Below is a 9 chapters story designed to unlock after every successful appointment, a hidden message is shown by the end of every chapter.</p>
+        </div>
+    </div>
+
+    <!-- Unlocked Modal -->
+    <div class="unlocked-modal" id="unlockedModal">
+        <div class="unlocked-content" onclick="event.stopPropagation()">
+            <div class="close-welcome" onclick="closeUnlockedModal()">✕</div>
+            <div id="unlockedMessage"></div>
+        </div>
+    </div>
+
+    <!-- Reading View -->
+    <div class="reading-view" id="readingView">
+        <div class="reading-header">
+            <div class="reading-close" onclick="closeReading()">←</div>
+            <div class="reading-title">The First Step Back</div>
+            <div class="reading-subtitle">Chapter Two</div>
+        </div>
+        
+        <div class="reading-content" onscroll="updateProgress(this)">
+            <p>
+                The morning after the diagnosis, I woke up expecting the world to look different. But the sun still rose, casting the same golden light through my bedroom window. The birds still sang their morning songs. Life, in all its ordinary beauty, continued.
+            </p>
+            
+            <p>
+                I lay there, staring at the ceiling, feeling the weight of those two letters: HIV. They felt heavy, like an anchor pulling me down into a sea of uncertainty. But somewhere in that heaviness, there was also a strange sense of clarity.
+            </p>
+            
+            <p>
+                This wasn't the end of my story. It was just a new chapter. A chapter I never wanted to write, but one I had to face nonetheless. And facing it meant taking the first step back—back to myself, back to hope, back to life.
+            </p>
+            
+            <p>
+                I thought about all the things I still wanted to do. The places I wanted to see. The people I wanted to love. The dreams I wanted to chase. And I realized that HIV couldn't take those things away from me unless I let it.
+            </p>
+            
+            <p>
+                So I got out of bed. I put one foot in front of the other. I took that first step back. And with each step, I felt a little stronger, a little more certain that I could do this.
+            </p>
+            
+            <p>
+                Because one step is enough to begin. And beginning is everything.
+            </p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <script>
+        function navigateTo(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            document.getElementById(screenId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const bottomNav = document.getElementById('bottomNav');
+            if (screenId === 'profile-edit' || screenId === 'avatar-select' || screenId === 'aichat' || screenId === 'notifications') {
+                bottomNav.style.display = 'none';
+            } else {
+                bottomNav.style.display = 'flex';
+            }
+            
+            window.scrollTo(0, 0);
+        }
+
+        function showWelcomeModal() {
+            document.getElementById('welcomeModal').classList.add('active');
+        }
+
+        function showChapterMessage(chapterNum) {
+            const messages = {
+                1: {
+                    title: 'Chapter one: <span class="highlight">The Day Still Rose.</span>',
+                    content: `
+                        <p>You woke up believing the world has ended. But the sun rose anyway. Not because everything was fixed— but because <span style="color: #4ecdc4; font-weight: 600;">your story wasn't over.</span></p>
+                        <p>Today, you didn't come for answers. You came to stay alive in the story.</p>
+                        <p style="margin-top: 20px;">Unlocked message: <strong>"Showing up is already strength."</strong></p>
+                    `
+                },
+                2: {
+                    title: 'Chapter two: <span class="highlight">The First Step Back.</span>',
+                    content: `
+                        <p>You met a doctor. Not a miracle. Just a human who listened. For the first time, your voice didn't disappear in the room...</p>
+                        <p>That small moment planted something fragile but real, <span style="color: #4ecdc4; font-weight: 600;">trust can grow again.</span></p>
+                        <p style="margin-top: 20px;">Unlocked message: <strong>"One step is enough to begin."</strong></p>
+                    `
+                }
+            };
+
+            const message = messages[chapterNum];
+            if (message) {
+                document.getElementById('unlockedMessage').innerHTML = `
+                    <h2>${message.title}</h2>
+                    ${message.content}
+                `;
+                document.getElementById('unlockedModal').classList.add('active');
+            }
+        }
+
+        function showSuccessModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+            document.querySelectorAll('.screen.active').forEach(screen => {
+                screen.classList.add('blurred');
+            });
+            document.getElementById('bottomNav').classList.add('blurred');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('blurred');
+            });
+            document.getElementById('bottomNav').classList.remove('blurred');
+        }
+
+        function showNotification() {
+            navigateTo('notifications');
+        }
+
+        function closeWelcomeModal() {
+            document.getElementById('welcomeModal').classList.remove('active');
+        }
+
+        function closeUnlockedModal() {
+            document.getElementById('unlockedModal').classList.remove('active');
+        }
+
+        function closeReading() {
+            document.getElementById('readingView').classList.remove('active');
+        }
+
+        function updateProgress(element) {
+            const scrollPercentage = (element.scrollTop / (element.scrollHeight - element.clientHeight)) * 100;
+            document.getElementById('progressFill').style.width = scrollPercentage + '%';
+        }
+
+        function handleAIChat(event) {
+            if (event.key === 'Enter') {
+                sendAIMessage();
+            }
+        }
+
+        function sendAIMessage() {
+            const input = document.getElementById('chatInputField');
+            const question = input.value.trim();
+            
+            if (question) {
+                addChatMessage(question, 'user');
+                input.value = '';
+                document.getElementById('typingDots').classList.add('show');
+                
+                setTimeout(() => {
+                    document.getElementById('typingDots').classList.remove('show');
+                    respondToQuestion(question);
+                }, 1500);
+            }
+        }
+
+        function addChatMessage(text, type) {
+            const container = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${type}`;
+            messageDiv.textContent = text;
+            
+            const typingDots = document.getElementById('typingDots');
+            container.insertBefore(messageDiv, typingDots);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function respondToQuestion(question) {
+            const container = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message bot';
+            
+            const lowerQ = question.toLowerCase();
+            let answer = 'I\'m here to help with HIV health questions. You can ask me about treatment, U=U, medications, side effects, mental health, nutrition, exercise, and living well with HIV.';
+            
+            if (lowerQ.includes('u=u') || lowerQ.includes('undetectable')) {
+                answer = '<strong>U=U: Undetectable = Untransmittable</strong><br><br>When you maintain an undetectable viral load through consistent ART, you CANNOT sexually transmit HIV to others. This has been proven by multiple large-scale studies and is a scientific fact that helps reduce stigma.';
+            } else if (lowerQ.includes('treatment') || lowerQ.includes('art')) {
+                answer = '<strong>HIV Treatment (ART)</strong><br><br>Antiretroviral therapy is the cornerstone of HIV treatment. Key points:<br>• Usually 1-3 pills per day<br>• Reduces viral load to undetectable<br>• Helps maintain a healthy immune system<br>• Must be taken consistently<br>• With proper treatment, you can live a normal lifespan';
+            } else if (lowerQ.includes('side effect')) {
+                answer = '<strong>Side Effects</strong><br><br>While modern HIV medications are generally well-tolerated, some people may experience:<br>• Nausea or upset stomach<br>• Headaches<br>• Fatigue<br>• Dizziness<br><br>Most side effects are mild and improve within a few weeks. Always talk to your doctor if you experience persistent side effects.';
+            }
+            
+            messageDiv.innerHTML = answer + '<div class="message-reactions"><button class="reaction-btn" onclick="toggleLike(this)">👍</button><button class="reaction-btn" onclick="toggleLike(this)">👎</button></div>';
+            
+            const typingDots = document.getElementById('typingDots');
+            container.insertBefore(messageDiv, typingDots);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function toggleLike(button) {
+            const parent = button.parentElement;
+            parent.querySelectorAll('.reaction-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+        }
+
+        document.getElementById('welcomeModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeWelcomeModal();
+        });
+
+        document.getElementById('unlockedModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeUnlockedModal();
+        });
+
+        let selectedAvatarEmoji = '👤';
+
+        function selectAvatar(element, emoji) {
+            document.querySelectorAll('.avatar-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedAvatarEmoji = emoji;
+        }
+
+        function confirmAvatar() {
+            document.querySelectorAll('.profile-pic').forEach(pic => {
+                pic.textContent = selectedAvatarEmoji;
+            });
+            document.querySelectorAll('.profile-avatar').forEach(avatar => {
+                avatar.textContent = selectedAvatarEmoji;
+            });
+            navigateTo('profile-edit');
+        }
+
+        document.querySelectorAll('.toggle-switch').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('off');
+            });
+        });
+
+        document.querySelectorAll('.calendar-day:not(.header):not(.inactive)').forEach(day => {
+            day.addEventListener('click', function() {
+                document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('today'));
+                this.classList.add('today');
+            });
+        });
+
+        document.querySelectorAll('.story-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('click', function() {
+                this.style.background = this.style.background === 'rgb(78, 205, 196)' ? '' : '#4ecdc4';
+                this.innerHTML = this.innerHTML === '✓' ? '' : '✓';
+                this.style.color = 'white';
+                this.style.display = 'flex';
+                this.style.alignItems = 'center';
+                this.style.justifyContent = 'center';
+            });
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
